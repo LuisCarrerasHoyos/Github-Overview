@@ -1,0 +1,31 @@
+---
+# Instala nginx y utilidades básicas
+- name: Actualizar cache e instalar nginx
+  apt:
+    update_cache: yes
+    name:
+      - nginx
+      - curl
+    state: present
+
+- name: Asegurar que nginx está habilitado y arrancado
+  service:
+    name: nginx
+    state: started
+    enabled: yes
+
+# Crear una página simple que identifique la instancia
+- name: Crear index.html indicando la instancia
+  copy:
+    dest: /var/www/html/index.html
+    content: |
+      <html>
+      <head><title>ASG instance</title></head>
+      <body>
+        <h1>Hello from ASG instance</h1>
+        <p>Hostname: {{ inventory_hostname }}</p>
+        <p>Public IP: {{ ansible_default_ipv4.address | default('no-ip') }}</p>
+      </body>
+      </html>
+    owner: www-data
+    group: www-data
