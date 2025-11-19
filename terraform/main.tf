@@ -398,7 +398,7 @@ resource "aws_db_subnet_group" "rds_subnet_group" {
 }
 
 resource "aws_db_instance" "postgres" {
-  identifier              = "wordpress-db-luis"
+  identifier              = "wordpress-db-${var.environment}"
   engine                 = "postgres"
   instance_class         = "db.t3.micro"
   db_name                = "wordpress"
