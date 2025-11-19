@@ -69,10 +69,15 @@ jobs:
         run: |
           terraform init
           
-          # Verificar estado actual
-          terraform plan -var="public_key=${{ secrets.EC2_SSH_PUBLIC_KEY }}" -out=tfplan
+          # Destruir recursos existentes primero
+          echo "Destruyendo recursos existentes..."
+          terraform destroy -auto-approve -var="public_key=${{ secrets.EC2_SSH_PUBLIC_KEY }}" || true
           
-          # Aplicar cambios
+          # Pequeña pausa para que AWS libere los recursos
+          sleep 30
+          
+          # Aplicar nueva infraestructura
+          echo "Creando nueva infraestructura..."
           terraform apply -auto-approve -var="public_key=${{ secrets.EC2_SSH_PUBLIC_KEY }}"
 
       # 8. Guardar la clave privada SSH
