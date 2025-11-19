@@ -233,7 +233,7 @@ resource "aws_security_group" "rds_sg" {
 # 9️⃣ Clave SSH para las instancias
 ##########################################################
 resource "aws_key_pair" "main" {
-  key_name   = "terraform-key-new"
+  key_name   = "terraform-key-${var.environment}"
   public_key = var.public_key
 }
 
@@ -298,20 +298,20 @@ resource "aws_launch_template" "web_lt" {
 # 13️⃣ Application Load Balancer
 ##########################################################
 resource "aws_lb" "web_alb" {
-  name               = "web-alb"
+  name               = "web-alb-${var.environment}"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb_sg.id]
   subnets            = [for subnet in aws_subnet.public : subnet.id]  # Sintaxis corregida
 
   tags = {
-    Name = "web-alb"
+    Name = "web-alb-${var.environment}"
   }
 }
 
 # Target group del ALB
 resource "aws_lb_target_group" "web_tg" {
-  name        = "web-tg"
+  name        = "web-tg-${var.environment}"
   port        = 80
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id
@@ -389,11 +389,11 @@ resource "aws_autoscaling_group" "web_asg" {
 # 15️⃣ RDS PostgreSQL (Usuario Corregido)
 ##########################################################
 resource "aws_db_subnet_group" "rds_subnet_group" {
-  name       = "rds-subnet-group-luis"
+  name       = "rds-subnet-group-${var.environment}"
   subnet_ids = [for subnet in aws_subnet.private : subnet.id]
 
   tags = {
-    Name = "rds-subnet-group"
+    Name = "rds-subnet-group-${var.environment}"
   }
 }
 
