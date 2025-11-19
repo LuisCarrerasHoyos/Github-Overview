@@ -4,10 +4,10 @@ variable "aws_region" {
   default     = "sa-east-1"
 }
 
-#variable "public_key" {
-#  description = "SSH public key to access the instances"
-#  type        = string
-#}
+variable "public_key" {
+  description = "Public key for EC2"
+  type        = string
+}
 
 variable "vpc_cidr" {
   description = "CIDR block for the VPC"
