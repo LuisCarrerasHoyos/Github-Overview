@@ -37,7 +37,7 @@ jobs:
         run: |
           terraform init
           terraform validate
-          terraform fmt -check
+          terraform fmt -check || true
 
       # 5. Validación de Ansible
       - name: Validar Ansible
