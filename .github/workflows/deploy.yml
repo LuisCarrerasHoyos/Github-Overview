@@ -35,7 +35,7 @@ jobs:
       - name: Validar Terraform
         run: |
           terraform init
-          terraform validate
+          terraform validate -var="public_key=${{ secrets.EC2_SSH_PUBLIC_KEY }}"
           terraform fmt -check
         working-directory: terraform
 
@@ -48,7 +48,7 @@ jobs:
       - name: Aplicar Terraform
         run: |
           terraform init
-          terraform apply -auto-approve
+          terraform apply -auto-approve -var="public_key=${{ secrets.EC2_SSH_PUBLIC_KEY }}"
         working-directory: terraform
 
       # 7. Guardar la clave privada SSH
