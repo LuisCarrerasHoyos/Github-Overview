@@ -27,6 +27,12 @@ variable "private_subnet_cidrs" {
   default     = ["10.0.101.0/24", "10.0.102.0/24"]
 }
 
+variable "environment" {
+  description = "Entorno para diferenciar recursos (dev, prod, test)"
+  type        = string
+  default     = "dev"   # opcional, puedes cambiarlo
+}
+
 
 #variable "db_password" {
 #  description = "Password for the RDS database"
