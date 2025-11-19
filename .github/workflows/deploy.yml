@@ -1,0 +1,51 @@
+name: Deploy Infraestructura
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      ANSIBLE_HOST_KEY_CHECKING: "False"
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Instalar Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.13.5
+
+      - name: Instalar Ansible
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ansible sshpass
+
+      - name: Validar Terraform
+        run: |
+          terraform init
+          terraform validate
+          terraform fmt -check
+
+      - name: Validar Ansible
+        run: |
+          ansible-playbook -i inventory_aws_ec2.yml site.yml --syntax-check
+
+      - name: Aplicar Terraform
+        run: |
+          terraform init
+          terraform apply -auto-approve
+
+      - name: Configurar clave privada SSH
+        run: |
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ./mi_clave.pem
+          chmod 600 ./mi_clave.pem
+
+      - name: Ejecutar Ansible
+        run: |
+          ansible-playbook -i inventory_aws_ec2.yml site.yml --private-key ./mi_clave.pem
