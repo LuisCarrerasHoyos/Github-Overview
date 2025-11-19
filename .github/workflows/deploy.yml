@@ -25,14 +25,24 @@ jobs:
         with:
           terraform_version: 1.13.5
 
-      # 3. Instalar Ansible
-      - name: Instalar Ansible
+      # 3. Instalar y configurar Ansible
+      - name: Instalar dependencias
         run: |
           sudo apt-get update
           sudo apt-get install -y ansible sshpass python3-pip
-          pip3 install boto3 botocore
+          sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 1
+          python -m pip install --upgrade pip
+          python -m pip install boto3 botocore
 
-      # 4. Validación de Terraform
+      # 4. Configurar Python para Ansible
+      - name: Configurar Ansible
+        run: |
+          # Verificar la instalación
+          python --version
+          pip list | grep -E "(boto3|botocore)"
+          ansible --version
+
+      # 5. Validación de Terraform
       - name: Validar Terraform
         working-directory: terraform
         run: |
@@ -40,28 +50,42 @@ jobs:
           terraform validate
           terraform fmt -recursive || true
 
-      # 5. Validación de Ansible
-      - name: Validar Ansible
+      # 6. Validación de Ansible (con inventory estático temporal)
+      - name: Validar sintaxis Ansible
         working-directory: ansible
         run: |
-          ansible-playbook -i inventory_aws_ec2.yml site.yml --syntax-check
+          # Crear un inventory simple para validación de sintaxis
+          cat > inventory_temp.yml << EOF
+          all:
+            hosts:
+              localhost:
+                ansible_connection: local
+          EOF
+          ansible-playbook -i inventory_temp.yml site.yml --syntax-check
 
-      # 6. Aplicar Terraform (crear la infraestructura)
+      # 7. Aplicar Terraform con manejo de errores
       - name: Aplicar Terraform
         working-directory: terraform
         run: |
           terraform init
+          
+          # Verificar estado actual
+          terraform plan -var="public_key=${{ secrets.EC2_SSH_PUBLIC_KEY }}" -out=tfplan
+          
+          # Aplicar cambios
           terraform apply -auto-approve -var="public_key=${{ secrets.EC2_SSH_PUBLIC_KEY }}"
 
-      # 7. Guardar la clave privada SSH
+      # 8. Guardar la clave privada SSH
       - name: Configurar clave privada SSH
         working-directory: ansible
         run: |
           echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > mi_clave.pem
           chmod 600 mi_clave.pem
 
-      # 8. Ejecutar Ansible en los servidores creados
+      # 9. Ejecutar Ansible en los servidores creados
       - name: Ejecutar Ansible
         working-directory: ansible
         run: |
+          # Esperar un poco para que las instancias estén listas
+          sleep 30
           ansible-playbook -i inventory_aws_ec2.yml site.yml --private-key mi_clave.pem
