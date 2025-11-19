@@ -6,6 +6,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -13,39 +14,53 @@ jobs:
       ANSIBLE_HOST_KEY_CHECKING: "False"
 
     steps:
+
+      # 1. Descargar el repositorio
       - name: Checkout código
         uses: actions/checkout@v3
 
+      # 2. Instalar Terraform
       - name: Instalar Terraform
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.13.5
 
+      # 3. Instalar Ansible
       - name: Instalar Ansible
         run: |
           sudo apt-get update
           sudo apt-get install -y ansible sshpass
 
+      # 4. Validación de Terraform
       - name: Validar Terraform
         run: |
           terraform init
           terraform validate
           terraform fmt -check
+        working-directory: terraform
 
+      # 5. Validación de Ansible
       - name: Validar Ansible
-        run: |
-          ansible-playbook -i inventory_aws_ec2.yml site.yml --syntax-check
+        run: ansible-playbook -i inventory_aws_ec2.yml site.yml --syntax-check
+        working-directory: ansible
 
+      # 6. Aplicar Terraform (crear la infraestructura)
       - name: Aplicar Terraform
         run: |
           terraform init
           terraform apply -auto-approve
+        working-directory: terraform
 
+      # 7. Guardar la clave privada SSH
       - name: Configurar clave privada SSH
         run: |
-          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ./mi_clave.pem
-          chmod 600 ./mi_clave.pem
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > mi_clave.pem
+          chmod 600 mi_clave.pem
+        working-directory: ansible
 
+      # 8. Ejecutar Ansible para configurar los servidores
       - name: Ejecutar Ansible
         run: |
-          ansible-playbook -i inventory_aws_ec2.yml site.yml --private-key ./mi_clave.pem
+          ansible-playbook -i inventory_aws_ec2.yml site.yml --private-key mi_clave.pem
+        working-directory: ansible
+
