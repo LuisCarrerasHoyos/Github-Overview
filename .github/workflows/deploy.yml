@@ -15,52 +15,50 @@ jobs:
 
     steps:
 
-      # 1. Descargar el repositorio
+      # Descargar el repositorio
       - name: Checkout código
         uses: actions/checkout@v3
 
-      # 2. Instalar Terraform
+      #  Instalar Terraform
       - name: Instalar Terraform
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.13.5
 
-      # 3. Instalar Ansible
+      #  Instalar Ansible
       - name: Instalar Ansible
         run: |
           sudo apt-get update
           sudo apt-get install -y ansible sshpass
 
-      # 4. Validación de Terraform
+      # Validar Terraform
       - name: Validar Terraform
-        working-directory: terraform
         run: |
+          cd terraform
           terraform init
           terraform validate -var="public_key=${{ secrets.EC2_SSH_PUBLIC_KEY }}"
           terraform fmt -check
 
-      # 5. Validación de Ansible
+      # Validar Ansible
       - name: Validar Ansible
-        working-directory: ansible
         run: |
-          ansible-playbook -i inventory_aws_ec2.yml site.yml --syntax-check
+          ls -la ansible    # <-- esto para depurar que site.yml esté
+          ansible-playbook -i ansible/inventory_aws_ec2.yml ansible/site.yml --syntax-check
 
-      # 6. Aplicar Terraform (crear la infraestructura)
+      #  Aplicar Terraform
       - name: Aplicar Terraform
-        working-directory: terraform
         run: |
+          cd terraform
           terraform init
           terraform apply -auto-approve -var="public_key=${{ secrets.EC2_SSH_PUBLIC_KEY }}"
 
-      # 7. Guardar la clave privada SSH
+      #  Guardar clave privada SSH
       - name: Configurar clave privada SSH
-        working-directory: ansible
         run: |
-          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > mi_clave.pem
-          chmod 600 mi_clave.pem
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ansible/mi_clave.pem
+          chmod 600 ansible/mi_clave.pem
 
-      # 8. Ejecutar Ansible en los servidores creados
+      #  Ejecutar Ansible
       - name: Ejecutar Ansible
-        working-directory: ansible
         run: |
-          ansible-playbook -i inventory_aws_ec2.yml site.yml --private-key mi_clave.pem
+          ansible-playbook -i ansible/inventory_aws_ec2.yml ansible/site.yml --private-key ansible/mi_clave.pem
