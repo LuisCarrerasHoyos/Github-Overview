@@ -41,8 +41,8 @@ jobs:
 
       # 5. Validación de Ansible
       - name: Validar Ansible
+        working-directory: ./ansible
         run: ansible-playbook -i inventory_aws_ec2.yml site.yml --syntax-check
-        working-directory: ansible
 
       # 6. Aplicar Terraform (crear la infraestructura)
       - name: Aplicar Terraform
@@ -53,14 +53,16 @@ jobs:
 
       # 7. Guardar la clave privada SSH
       - name: Configurar clave privada SSH
+        working-directory: ./ansible
         run: |
           echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > mi_clave.pem
           chmod 600 mi_clave.pem
-        working-directory: ansible
+      
 
       # 8. Ejecutar Ansible para configurar los servidores
       - name: Ejecutar Ansible
+        working-directory: ./ansible
         run: |
           ansible-playbook -i inventory_aws_ec2.yml site.yml --private-key mi_clave.pem
-        working-directory: ansible
+        
 
