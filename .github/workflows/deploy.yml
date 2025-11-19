@@ -36,7 +36,7 @@ jobs:
         working-directory: terraform
         run: |
           terraform init
-          terraform validate -var="public_key=${{ secrets.EC2_SSH_PUBLIC_KEY }}"
+          terraform validate
           terraform fmt -check
 
       # 5. Validación de Ansible
