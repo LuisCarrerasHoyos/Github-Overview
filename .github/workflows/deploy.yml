@@ -29,7 +29,8 @@ jobs:
       - name: Instalar Ansible
         run: |
           sudo apt-get update
-          sudo apt-get install -y ansible sshpass
+          sudo apt-get install -y ansible sshpass python3-pip
+          pip3 install boto3 botocore
 
       # 4. Validación de Terraform
       - name: Validar Terraform
