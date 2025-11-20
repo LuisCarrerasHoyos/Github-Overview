@@ -78,7 +78,7 @@ jobs:
             terraform init -input=false
 
             # FORZAR liberación del lock si existe
-            terraform force-unlock -force 66ef59bd-9077-1671-9e64-145c0b4153ac
+            # terraform force-unlock -force 66ef59bd-9077-1671-9e64-145c0b4153ac
             
             # Destruir recursos existentes primero
             echo "Destruyendo recursos existentes..."
