@@ -41,8 +41,8 @@ jobs:
 
       - name: Verificar que boto3 funciona en el entorno de Ansible
         run: |
-          /opt/pipx/venvs/ansible-core/bin/python -c "import boto3, botocore; print('✅ boto3 version:', boto3._version); print('✅ botocore version:', botocore.version_)"
-      
+          /opt/pipx/venvs/ansible-core/bin/python -c "import boto3, botocore; print('✅ boto3 version:', boto3.__version__); print('✅ botocore version:', botocore.__version__)"
+            
       # 4. Verificar instalación de Ansible y Python
       - name: Verificar Ansible y Python
         run: |
