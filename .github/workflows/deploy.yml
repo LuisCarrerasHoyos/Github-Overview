@@ -38,6 +38,11 @@ jobs:
       - name: Instalar boto3 en pipx Ansible
         run: |
           /opt/pipx/venvs/ansible-core/bin/python -m pip install --upgrade boto3 botocore
+
+      - name: Verificar que boto3 funciona en el entorno de Ansible
+        run: |
+          /opt/pipx/venvs/ansible-core/bin/python -c "import boto3, botocore; print('✅ boto3 version:', boto3._version); print('✅ botocore version:', botocore.version_)"
+      
       # 4. Verificar instalación de Ansible y Python
       - name: Verificar Ansible y Python
         run: |
@@ -71,6 +76,9 @@ jobs:
         run: |
             # Inicializar backend remoto (S3)
             terraform init -input=false
+
+            # 🔓 FORZAR liberación del lock si existe
+            terraform force-unlock -force 66ef59bd-9077-1671-9e64-145c0b4153ac
             
             # Destruir recursos existentes primero
             echo "Destruyendo recursos existentes..."
