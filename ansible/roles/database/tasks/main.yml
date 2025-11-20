@@ -1,0 +1,39 @@
+# Instalar MySQL
+- name: Instalar MySQL y PyMySQL
+  package:
+    name: 
+      - mysql-server
+      - python3-pymysql
+    state: present
+    update_cache: yes  
+  become: yes
+
+# Asegurarse de que MySQL esté activo y habilitado al inicio
+- name: Asegurar que MySQL esté activo
+  service:
+    name: mysql
+    state: started
+    enabled: yes
+  become: yes
+
+# Crear base de datos para WordPress
+- name: Crear base de datos wordpress
+  community.mysql.mysql_db:
+    name: wordpress
+    state: present
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+  become: yes
+
+# Crear usuario y contraseña para WordPress
+- name: Crear usuario wp_user
+  community.mysql.mysql_user:
+    name: wp_user
+    password: wp_pass
+    priv: "wordpress.*:ALL"
+    host: "%"
+    state: present
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+  become: yes
+
+
+

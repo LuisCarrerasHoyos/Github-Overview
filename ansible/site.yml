@@ -1,0 +1,6 @@
+---
+- name: Configurar servidor web
+  hosts: role_web
+  become: yes
+  roles:
+    - webserver

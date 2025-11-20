@@ -1,0 +1,16 @@
+# Ignorar claves privadas y pem
+mi_clave.pem
+*.pem
+# Ignorar credenciales AWS (no subir nunca)
+.aws/
+# Ansible runtime files
+*.retry
+*.log
+# Vagrant / python / caches
+.vagrant/
+__pycache__/
+*.pyc
+# Editor / OS files
+*.swp
+.DS_Store
+Thumbs.db

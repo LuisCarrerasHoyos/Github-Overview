@@ -1,0 +1,30 @@
+# inventory_aws_aws_ec2.yml - VERSIÓN CORREGIDA
+plugin: aws_ec2
+regions:
+  - sa-east-1
+
+filters:
+  instance-state-name: running
+
+# ✅ CORREGIDO - Usar instance-id como hostname principal
+hostnames:
+  - instance-id  # ✅ Esto evita nombres duplicados
+  - tag:Name
+  - private-dns-name
+
+# ✅ Grupos automáticos
+keyed_groups:
+  - key: tags.Role
+    prefix: role
+  - key: tags.Environment
+    prefix: env
+  - key: 'tags["aws:autoscaling:groupName"]'
+    prefix: asg
+
+# ✅ Configuración de conexión
+compose:
+  ansible_host: public_ip_address
+  ansible_user: ubuntu
+  ansible_ssh_private_key_file: "./mi_clave.pem"
+  ansible_connection_host: public_ip_address | default(private_ip_address)
+
