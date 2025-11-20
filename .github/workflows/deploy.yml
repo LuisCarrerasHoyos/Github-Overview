@@ -33,6 +33,11 @@ jobs:
           sudo apt-get install -y ansible sshpass python3-pip
           python3 -m pip install --upgrade pip
           python3 -m pip install boto3 botocore
+
+      # 3.1 Instalar boto3 y botocore en el entorno pipx de Ansible
+      - name: Instalar boto3 en pipx Ansible
+        run: |
+          /opt/pipx/venvs/ansible-core/bin/python -m pip install --upgrade boto3 botocore
       # 4. Verificar instalación de Ansible y Python
       - name: Verificar Ansible y Python
         run: |
