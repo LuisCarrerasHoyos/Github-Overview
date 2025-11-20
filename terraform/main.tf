@@ -234,7 +234,7 @@ resource "aws_security_group" "rds_sg" {
 ##########################################################
 resource "aws_key_pair" "main" {
   key_name   = "terraform-key-new"
-  public_key = file("./.ssh/terraform_key.pub")
+  public_key = var.public_key
 }
 
 ##########################################################
