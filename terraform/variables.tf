@@ -30,7 +30,7 @@ variable "private_subnet_cidrs" {
 variable "environment" {
   description = "Entorno para diferenciar recursos (dev, prod, test)"
   type        = string
-  default     = "dev"   # opcional, puedes cambiarlo
+  default     = "dev"  
 }
 
 
