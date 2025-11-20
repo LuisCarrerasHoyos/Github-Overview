@@ -31,17 +31,13 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y ansible sshpass python3-pip
-          sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 1
-          python -m pip install --upgrade pip
-          python -m pip install boto3 botocore
-
-      # 4. Configurar Python para Ansible
-      - name: Configurar Ansible
+          python3 -m pip install --upgrade pip
+          python3 -m pip install boto3 botocore
+      # 4. Verificar instalación de Ansible y Python
+      - name: Verificar Ansible y Python
         run: |
-          # Verificar la instalación
-          python --version
-          pip list | grep -E "(boto3|botocore)"
           ansible --version
+          python3 -m pip list | grep -E "(boto3|botocore)"
 
       # 5. Validación de Terraform
       - name: Validar Terraform
