@@ -1,13 +1,10 @@
-##########################################################
-# 1️⃣ Obtener las zonas de disponibilidad disponibles
-##########################################################
+
+# Zonas de disponibilidad disponibles (Availability Zones (AZs)) 
 data "aws_availability_zones" "available" {
   state = "available"
 }
 
-##########################################################
-# 2️⃣ Crear la VPC principal
-##########################################################
+# Crear la VPC principal
 resource "aws_vpc" "main" {
   cidr_block = var.vpc_cidr  # "10.0.0.0/16"
   
@@ -16,9 +13,8 @@ resource "aws_vpc" "main" {
   }
 }
 
-##########################################################
-# 3️⃣ Crear Internet Gateway (para subredes públicas)
-##########################################################
+
+# Crear Internet Gateway (para subredes públicas)
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main.id
 
@@ -27,9 +23,7 @@ resource "aws_internet_gateway" "igw" {
   }
 }
 
-##########################################################
-# 4️⃣ Crear subredes públicas
-##########################################################
+# Crear subredes públicas
 resource "aws_subnet" "public" {
   for_each = {
     az1 = var.public_subnet_cidrs[0]  # CIDR de primera subred pública
@@ -46,9 +40,7 @@ resource "aws_subnet" "public" {
   }
 }
 
-##########################################################
-# 5️⃣ Crear subredes privadas (para RDS)
-##########################################################
+# Crear subredes privadas (para RDS)
 resource "aws_subnet" "private" {
   for_each = {
     az1 = var.private_subnet_cidrs[0]
@@ -65,9 +57,7 @@ resource "aws_subnet" "private" {
   }
 }
 
-##########################################################
-# 6️⃣ Crear tabla de rutas para subredes públicas
-##########################################################
+# Crear tabla de rutas para subredes públicas
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
@@ -88,18 +78,16 @@ resource "aws_route_table_association" "public_assoc" {
   route_table_id = aws_route_table.public.id
 }
 
-##########################################################
-# 7️⃣ Crear NAT Gateway (para subredes privadas)
-##########################################################
+# Crear NAT Gateway (para subredes privadas)
 # Elastic IP para NAT
 resource "aws_eip" "nat" {
-  domain = "vpc"  # Sintaxis corregida para EIP en VPC
+  domain = "vpc" 
 }
 
 # NAT Gateway en la primera subred pública
 resource "aws_nat_gateway" "nat" {
   allocation_id = aws_eip.nat.id
-  subnet_id     = aws_subnet.public["az1"].id  # Referencia corregida
+  subnet_id     = aws_subnet.public["az1"].id a
 
   tags = {
     Name = "nat-gateway"
@@ -129,9 +117,8 @@ resource "aws_route_table_association" "private_assoc" {
   route_table_id = aws_route_table.private.id
 }
 
-##########################################################
-# 8️⃣ Security Groups
-##########################################################
+
+# Security Groups
 
 # ALB: permite HTTP/HTTPS desde cualquier IP
 resource "aws_security_group" "alb_sg" {
@@ -229,17 +216,13 @@ resource "aws_security_group" "rds_sg" {
   }
 }
 
-##########################################################
-# 9️⃣ Clave SSH para las instancias
-##########################################################
+# Clave SSH para las instancias
 resource "aws_key_pair" "main" {
   key_name   = "terraform-key-new"
   public_key = var.public_key
 }
 
-##########################################################
-# 10️⃣ Buscar AMI de Ubuntu para las instancias web
-##########################################################
+#  Buscar AMI de Ubuntu para las instancias web
 data "aws_ami" "ubuntu" {
   most_recent = true
   owners      = ["099720109477"]  # Canonical
@@ -255,24 +238,21 @@ data "aws_ami" "ubuntu" {
   }
 }
 
-##########################################################
-# 11️⃣ Generar contraseña segura para RDS
-##########################################################
+# Generar contraseña segura para RDS
 resource "random_password" "db_password" {
   length           = 16
   special          = true
   override_special = "!#$%&*()-_=+[]{}<>:?"
 }
 
-##########################################################
-# 12️⃣ Launch Template para ASG
-##########################################################
+
+# Launch Template para ASG (Launch template es la Plantilla que define como se crean las instancias)
 resource "aws_launch_template" "web_lt" {
   name_prefix   = "web-lt-"
   image_id      = data.aws_ami.ubuntu.id
   instance_type = "t3.small"
   key_name      = aws_key_pair.main.key_name
-  vpc_security_group_ids = [aws_security_group.asg_sg.id]  # Sintaxis corregida
+  vpc_security_group_ids = [aws_security_group.asg_sg.id]  
 
   tag_specifications {
     resource_type = "instance"
@@ -294,9 +274,7 @@ resource "aws_launch_template" "web_lt" {
   )
 }
 
-##########################################################
-# 13️⃣ Application Load Balancer
-##########################################################
+# Application Load Balancer
 resource "aws_lb" "web_alb" {
   name               = "web-alb"
   internal           = false
@@ -341,9 +319,7 @@ resource "aws_lb_listener" "web_listener" {
   }
 }
 
-##########################################################
-# 14️⃣ AutoScaling Group (CORREGIDO)
-##########################################################
+# AutoScaling Group (CORREGIDO)
 resource "aws_autoscaling_group" "web_asg" {
   name_prefix          = "web-asg-luis-"
   desired_capacity     = 2
@@ -371,7 +347,7 @@ resource "aws_autoscaling_group" "web_asg" {
   tag {
     key                 = "Role"
     value               = "web"
-    propagate_at_launch = true  # ✅ ESTO ES CRUCIAL
+    propagate_at_launch = true  
   }
 
   tag {
@@ -385,9 +361,7 @@ resource "aws_autoscaling_group" "web_asg" {
   }
 }
 
-##########################################################
-# 15️⃣ RDS PostgreSQL (Usuario Corregido)
-##########################################################
+# RDS PostgreSQL
 resource "aws_db_subnet_group" "rds_subnet_group" {
   name       = "rds-subnet-group-luis"
   subnet_ids = [for subnet in aws_subnet.private : subnet.id]
