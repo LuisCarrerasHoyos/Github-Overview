@@ -79,7 +79,7 @@ jobs:
             
             # Aplicar nueva infraestructura
             echo "Creando nueva infraestructura..."
-            terraform apply -auto-approve -var="ssh_public_key=${{ secrets.EC2_SSH_PUBLIC_KEY }}"
+            terraform apply -auto-approve -var="public_key=${{ secrets.EC2_SSH_PUBLIC_KEY }}"
 
       # 8. Guardar la clave privada SSH
       - name: Configurar clave privada SSH
