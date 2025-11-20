@@ -67,18 +67,19 @@ jobs:
       - name: Aplicar Terraform
         working-directory: terraform
         run: |
-          terraform init
-          
-          # Destruir recursos existentes primero
-          echo "Destruyendo recursos existentes..."
-          terraform destroy -auto-approve -var="public_key=${{ secrets.EC2_SSH_PUBLIC_KEY }}" || true
-          
-          # Pequeña pausa para que AWS libere los recursos
-          sleep 30
-          
-          # Aplicar nueva infraestructura
-          echo "Creando nueva infraestructura..."
-          terraform apply -auto-approve -var="public_key=${{ secrets.EC2_SSH_PUBLIC_KEY }}"
+            # Inicializar backend remoto (S3)
+            terraform init -input=false
+            
+            # Destruir recursos existentes primero
+            echo "Destruyendo recursos existentes..."
+            terraform destroy -auto-approve -var="public_key=${{ secrets.EC2_SSH_PUBLIC_KEY }}" || true
+            
+            # Pequeña pausa para que AWS libere los recursos
+            sleep 30
+            
+            # Aplicar nueva infraestructura
+            echo "Creando nueva infraestructura..."
+            terraform apply -auto-approve -var="public_key=${{ secrets.EC2_SSH_PUBLIC_KEY }}"
 
       # 8. Guardar la clave privada SSH
       - name: Configurar clave privada SSH
